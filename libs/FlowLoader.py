@@ -31,6 +31,8 @@ class FlowDataset(data.Dataset):
         '''
         self.transform = transforms.Compose([transforms.ToTensor()])
         self.test = test
+        if len(self.field_list) == 0:
+            print("DATASET ERROR: Found no flow files in {}".format(dataPath))
 
     def normalize(self, t):
         #put into 0-1 from an assumed range of [-max_magnitude, max_magnitude]
