@@ -9,11 +9,12 @@ def is_npz_file(filename):
     return any(filename.endswith(extension) for extension in [".npz", ".npy"])
 
 class FlowDataset(data.Dataset):
-    def __init__(self,dataPath,loadSize,fineSize,test=False,video=False):
+    def __init__(self,dataPath,loadSize,fineSize,test=False,max_magnitude=10.0):
         super(FlowDataset,self).__init__()
         self.dataPath = dataPath
         self.field_list = [x for x in os.listdir(dataPath) if is_npz_file(x)]
         self.field_list = sorted(self.field_list)
+        self.max_magnitude = max_magnitude 
 
         '''
         #These won't work.  They assume a PIL file.
@@ -30,6 +31,18 @@ class FlowDataset(data.Dataset):
         '''
         self.transform = transforms.Compose([transforms.ToTensor()])
         self.test = test
+
+    def normalize(self, t):
+        #put into 0-1 from an assumed range of [-max_magnitude, max_magnitude]
+        t.clamp_(-self.max_magnitude, self.max_magnitude)
+        t = t + self.max_magnitude
+        t = t / (2.0 * self.max_magnitude)
+        return t
+
+    def denormalize(self, t):
+        t = t * 2.0 * self.max_magnitude
+        t = t - self.max_magnitude
+        return t
 
     def __getitem__(self,index):
         dataPath = os.path.join(self.dataPath,self.field_list[index])
@@ -49,10 +62,20 @@ class FlowDataset(data.Dataset):
         blur_y_vel = torch.from_numpy(blur_y_vel)
         blur_z_vel = torch.from_numpy(blur_z_vel)
 
+        if z_vel.size(0) == 0:
+            #2D field expand it out
+            z_vel = z_vel.expand_as(x_vel)
+            z_vel.fill_(0.0)
+
+        vel = torch.stack((x_vel, y_vel, z_vel), dim=0)
+        blur_vel = torch.stack((blur_x_vel, blur_y_vel, blur_z_vel), dim=0)
+
+        vel = self.normalize(vel)
+        blur_vel = self.normalize(blur_vel)
 
         fldName = self.field_list[index]
         fldName = fldName.split('.')[0]
-        return x_vel, y_vel, z_vel, blur_x_vel, blur_y_vel, blur_z_vel,fldName
+        return vel, blur_vel, fldName
 
     def __len__(self):
         return len(self.field_list)

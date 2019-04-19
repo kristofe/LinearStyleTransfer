@@ -1,7 +1,7 @@
 import os
 import torch
 import argparse
-from libs.Loader import Dataset
+from libs.FlowLoader import FlowDataset
 from libs.Matrix import MulLayer
 import torchvision.utils as vutils
 import torch.backends.cudnn as cudnn
@@ -40,12 +40,12 @@ os.makedirs(opt.outf,exist_ok=True)
 cudnn.benchmark = True
 
 ################# DATA #################
-content_dataset = Dataset(opt.contentPath,opt.loadSize,opt.fineSize,test=True)
+content_dataset = FlowDataset(opt.contentPath,opt.loadSize,opt.fineSize,test=True)
 content_loader = torch.utils.data.DataLoader(dataset=content_dataset,
                                              batch_size = opt.batchSize,
                                              shuffle = False,
                                              num_workers = 1)
-style_dataset = Dataset(opt.stylePath,opt.loadSize,opt.fineSize,test=True)
+style_dataset = FlowDataset(opt.stylePath,opt.loadSize,opt.fineSize,test=True)
 style_loader = torch.utils.data.DataLoader(dataset=style_dataset,
                                            batch_size = opt.batchSize,
                                            shuffle = False,
