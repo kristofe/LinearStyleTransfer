@@ -1,6 +1,6 @@
 from __future__ import division
 import os
-import cv2
+#import cv2
 import time
 import torch
 import scipy.misc
@@ -8,7 +8,7 @@ import numpy as np
 import scipy.sparse
 from PIL import Image
 import scipy.sparse.linalg
-from cv2.ximgproc import jointBilateralFilter
+#from cv2.ximgproc import jointBilateralFilter
 from torch.utils.serialization import load_lua
 from numpy.lib.stride_tricks import as_strided
 
@@ -32,7 +32,7 @@ def whiten(cF):
     step2 = torch.mm(step1,(c_v[:,0:k_c].t()))
     whiten_cF = torch.mm(step2,cF)
     return whiten_cF
-
+'''
 def numpy2cv2(cont,style,prop,width,height):
     cont = cont.transpose((1,2,0))
     cont = cont[...,::-1]
@@ -74,6 +74,7 @@ def makeVideo(content,style,props,outf):
     os.remove('prop.png')
     os.remove('content.png')
     print('Transferred video saved at %s.'%outf)
+'''
 
 def print_options(opt):
     message = ''
