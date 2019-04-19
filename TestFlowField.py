@@ -40,16 +40,11 @@ os.makedirs(opt.outf,exist_ok=True)
 cudnn.benchmark = True
 
 ################# DATA #################
-content_dataset = FlowDataset(opt.contentPath,opt.loadSize,opt.fineSize,test=True)
-content_loader = torch.utils.data.DataLoader(dataset=content_dataset,
+flow_dataset = FlowDataset(opt.contentPath,opt.loadSize,opt.fineSize,test=True)
+flow_loader = torch.utils.data.DataLoader(dataset=flow_dataset,
                                              batch_size = opt.batchSize,
                                              shuffle = False,
                                              num_workers = 1)
-style_dataset = FlowDataset(opt.stylePath,opt.loadSize,opt.fineSize,test=True)
-style_loader = torch.utils.data.DataLoader(dataset=style_dataset,
-                                           batch_size = opt.batchSize,
-                                           shuffle = False,
-                                           num_workers = 1)
 
 ################# MODEL #################
 if(opt.layer == 'r31'):
@@ -75,6 +70,27 @@ if(opt.cuda):
     contentV = contentV.cuda()
     styleV = styleV.cuda()
 
+for vel, blur_vel, name in enumerate(flow_loader):
+    name = name[0]
+    contentV.resize_(blur_vel.size()).copy_(blur_vel)
+    styleV.resize_(vel.size()).copy_(vel)
+
+    # forward
+    with torch.no_grad():
+        sF = vgg(styleV)
+        cF = vgg(contentV)
+
+        if(opt.layer == 'r41'):
+            feature,transmatrix = matrix(cF[opt.layer],sF[opt.layer])
+        else:
+            feature,transmatrix = matrix(cF,sF)
+        transfer = dec(feature)
+
+    transfer = transfer.clamp(0,1)
+    vutils.save_image(transfer,'%s/%s.png'%(opt.outf,name),normalize=True,scale_each=True,nrow=opt.batchSize)
+    print('Transferred image saved at %s%s.png'%(opt.outf,name))
+
+'''
 for ci,(content,contentName) in enumerate(content_loader):
     contentName = contentName[0]
     contentV.resize_(content.size()).copy_(content)
@@ -96,3 +112,4 @@ for ci,(content,contentName) in enumerate(content_loader):
         transfer = transfer.clamp(0,1)
         vutils.save_image(transfer,'%s/%s_%s.png'%(opt.outf,contentName,styleName),normalize=True,scale_each=True,nrow=opt.batchSize)
         print('Transferred image saved at %s%s_%s.png'%(opt.outf,contentName,styleName))
+'''
