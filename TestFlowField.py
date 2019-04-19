@@ -88,6 +88,8 @@ for batch_id, (vel, blur_vel, name) in enumerate(flow_loader):
 
     transfer = transfer.clamp(0,1)
     vutils.save_image(transfer,'%s/%s.png'%(opt.outf,name),normalize=True,scale_each=True,nrow=opt.batchSize)
+    vutils.save_image(blur_vel,'%s/input_%s.png'%(opt.outf,name),normalize=True,scale_each=True,nrow=opt.batchSize)
+    vutils.save_image(vel,'%s/gt_and_style_%s.png'%(opt.outf,name),normalize=True,scale_each=True,nrow=opt.batchSize)
     print('Transferred image saved at %s%s.png'%(opt.outf,name))
 
 '''
