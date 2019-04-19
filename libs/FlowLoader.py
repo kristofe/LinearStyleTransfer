@@ -66,8 +66,10 @@ class FlowDataset(data.Dataset):
 
         if z_vel.size(0) == 0:
             #2D field expand it out
-            z_vel = z_vel.expand_as(x_vel)
+            z_vel = x_vel.clone() 
             z_vel.fill_(0.0)
+            blur_z_vel = x_vel.clone() 
+            blur_z_vel.fill_(0.0)
 
         vel = torch.stack((x_vel, y_vel, z_vel), dim=0)
         blur_vel = torch.stack((blur_x_vel, blur_y_vel, blur_z_vel), dim=0)

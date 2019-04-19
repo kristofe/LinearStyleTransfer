@@ -70,7 +70,7 @@ if(opt.cuda):
     contentV = contentV.cuda()
     styleV = styleV.cuda()
 
-for vel, blur_vel, name in enumerate(flow_loader):
+for batch_id, (vel, blur_vel, name) in enumerate(flow_loader):
     name = name[0]
     contentV.resize_(blur_vel.size()).copy_(blur_vel)
     styleV.resize_(vel.size()).copy_(vel)
